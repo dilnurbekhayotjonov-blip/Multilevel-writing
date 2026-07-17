@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Multilevel Writing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  :root{
+    --paper:#F7F4EC;
+    --paper-deep:#F1ECDF;
+    --line:#DAD2BA;
+    --ink:#1F2A44;
+    --ink-soft:#4A5670;
+    --burgundy:#7A1E33;
+    --burgundy-dark:#57121F;
+    --pen:#B8390E;
+    --gold:#A9863F;
+    --ok:#3C6E47;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    background-image:
+      radial-gradient(ellipse at top left, rgba(122,30,51,0.05), transparent 55%),
+      radial-gradient(ellipse at bottom right, rgba(169,134,63,0.06), transparent 55%);
+    color:var(--ink);
+    font-family:'Inter', sans-serif;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:760px;margin:0 auto;padding:28px 20px 80px;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:34px;}
+  .brand{display:flex;align-items:center;gap:12px;}
+  .seal{
+    width:44px;height:44px;border-radius:50%;
+    border:2px solid var(--burgundy);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;
+    color:var(--burgundy);letter-spacing:0.5px;
+    transform:rotate(-8deg);
+    flex-shrink:0;
+  }
+  .brand h1{font-family:'Fraunces',serif;font-size:22px;font-weight:600;margin:0;letter-spacing:-0.2px;}
+  .brand p{margin:0;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1px;}
+  .gear{
+    width:36px;height:36px;border-radius:50%;border:1px solid var(--line);
+    background:transparent;color:var(--ink-soft);cursor:pointer;
+    display:flex;align-items:center;justify-content:center;font-size:16px;
+    transition:all .15s ease;
+  }
+  .gear:hover{border-color:var(--burgundy);color:var(--burgundy);}
+
+  /* ---- Screens ---- */
+  .screen{display:none;}
+  .screen.active{display:block;animation:fade .35s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+  .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);margin-bottom:8px;}
+  h2.title{font-family:'Fraunces',serif;font-size:30px;font-weight:600;margin:0 0 6px;line-height:1.15;}
+  .sub{color:var(--ink-soft);font-size:15px;margin:0 0 30px;line-height:1.5;}
+
+  /* task cards */
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  @media (max-width:560px){.cards{grid-template-columns:1fr;}}
+  .card{
+    background:var(--paper-deep);
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:24px 20px;
+    cursor:pointer;
+    position:relative;
+    transition:all .18s ease;
+    text-align:left;
+  }
+  .card:hover{border-color:var(--burgundy);transform:translateY(-2px);box-shadow:0 8px 20px rgba(31,42,68,0.08);}
+  .card .num{
+    font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--burgundy);
+    border:1px solid var(--burgundy);border-radius:20px;padding:3px 10px;display:inline-block;margin-bottom:14px;
+  }
+  .card h3{font-family:'Fraunces',serif;font-size:20px;margin:0 0 6px;}
+  .card p{margin:0;font-size:13.5px;color:var(--ink-soft);line-height:1.5;}
+  .card .meta{margin-top:14px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--gold);}
+
+  /* form */
+  .field{margin-bottom:16px;}
+  .field label{display:block;font-family:'IBM Plex Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--ink-soft);margin-bottom:6px;}
+  .field input, .field textarea{
+    width:100%;border:none;border-bottom:2px solid var(--line);
+    background:transparent;font-family:'Inter',sans-serif;font-size:16px;color:var(--ink);
+    padding:9px 2px;outline:none;transition:border-color .15s ease;
+  }
+  .field input:focus{border-color:var(--burgundy);}
+
+  .btn{
+    font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:0.5px;
+    text-transform:uppercase;border:none;border-radius:3px;padding:13px 24px;
+    cursor:pointer;transition:all .15s ease;font-weight:600;
+  }
+  .btn-primary{background:var(--burgundy);color:var(--paper);}
+  .btn-primary:hover{background:var(--burgundy-dark);}
+  .btn-primary:disabled{opacity:0.4;cursor:not-allowed;}
+  .btn-ghost{background:transparent;color:var(--ink-soft);border:1px solid var(--line);}
+  .btn-ghost:hover{border-color:var(--ink-soft);color:var(--ink);}
+  .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
+  .back{background:none;border:none;color:var(--ink-soft);font-family:'IBM Plex Mono',monospace;font-size:12px;cursor:pointer;padding:0;margin-bottom:20px;display:inline-flex;align-items:center;gap:6px;}
+  .back:hover{color:var(--burgundy);}
+
+  /* writing screen */
+  .prompt-box{
+    background:var(--paper-deep);border-left:3px solid var(--burgundy);
+    padding:16px 18px;border-radius:0 4px 4px 0;margin-bottom:22px;
+  }
+  .prompt-box .tag{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--burgundy);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
+  .prompt-box p{margin:0;font-size:14.5px;line-height:1.6;}
+  .shuffle{background:none;border:none;color:var(--gold);font-family:'IBM Plex Mono',monospace;font-size:11px;cursor:pointer;margin-top:10px;padding:0;text-decoration:underline;}
+
+  .paper-area{
+    position:relative;
+    background:
+      repeating-linear-gradient(var(--paper) 0px, var(--paper) 30px, var(--line) 31px);
+    background-color:var(--paper);
+    border:1px solid var(--line);border-radius:4px;
+    padding:16px 16px 16px 16px;
+  }
+  textarea#essay{
+    width:100%;min-height:280px;border:none;background:transparent;resize:vertical;
+    font-family:'Inter',sans-serif;font-size:15.5px;line-height:31px;color:var(--ink);
+    outline:none;
+  }
+  .meta-row{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-soft);}
+  .wc.ok{color:var(--ok);}
+  .wc.warn{color:var(--pen);}
+
+  .actions{display:flex;gap:12px;margin-top:22px;flex-wrap:wrap;}
+
+  /* grammar results */
+  .gpanel{margin-top:26px;border-top:1px dashed var(--line);padding-top:20px;display:none;}
+  .gpanel.show{display:block;}
+  .gpanel h4{font-family:'Fraunces',serif;font-size:16px;margin:0 0 12px;color:var(--pen);display:flex;align-items:center;gap:8px;}
+  .note-item{
+    display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);
+    font-size:13.5px;line-height:1.5;
+  }
+  .note-item:last-child{border-bottom:none;}
+  .note-item .mk{color:var(--pen);font-family:'IBM Plex Mono',monospace;font-size:16px;line-height:1.5;}
+  .note-item .wrong{text-decoration:line-through wavy var(--pen);color:var(--ink-soft);}
+  .note-item .right{color:var(--ok);font-weight:600;}
+  .note-item .expl{display:block;color:var(--ink-soft);font-size:12.5px;margin-top:2px;}
+  .clean-msg{color:var(--ok);font-size:14px;font-family:'IBM Plex Mono',monospace;}
+  .spinner{
+    width:14px;height:14px;border:2px solid var(--line);border-top-color:var(--burgundy);
+    border-radius:50%;display:inline-block;animation:spin .7s linear infinite;margin-right:8px;vertical-align:-2px;
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  /* success */
+  .success-box{text-align:center;padding:60px 20px;}
+  .stamp{
+    width:96px;height:96px;border-radius:50%;border:3px solid var(--ok);
+    display:flex;align-items:center;justify-content:center;margin:0 auto 24px;
+    transform:rotate(-6deg);color:var(--ok);font-size:40px;
+  }
+
+  /* modal */
+  .overlay{position:fixed;inset:0;background:rgba(31,42,68,0.5);display:none;align-items:center;justify-content:center;padding:20px;z-index:50;}
+  .overlay.show{display:flex;}
+  .modal{background:var(--paper);border-radius:6px;padding:26px;max-width:400px;width:100%;border:1px solid var(--line);}
+  .modal h3{font-family:'Fraunces',serif;margin:0 0 6px;font-size:19px;}
+  .modal p.hint{font-size:12.5px;color:var(--ink-soft);margin:0 0 18px;line-height:1.5;}
+  .modal .row{justify-content:flex-end;margin-top:18px;}
+  .toast{
+    position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+    background:var(--ink);color:var(--paper);padding:12px 20px;border-radius:4px;
+    font-size:13.5px;opacity:0;pointer-events:none;transition:opacity .25s ease;z-index:60;
+  }
+  .toast.show{opacity:1;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <div class="brand">
+      <div class="seal">ML<br></div>
+      <div>
+        <h1>Multilevel Writing</h1>
+        <p>Yozma qism — mashq maydoni</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 1: task select -->
+  <div class="screen active" id="screen-home">
+    <div class="eyebrow">Vazifani tanlang</div>
+    <h2 class="title">Qaysi qismni yozamiz?</h2>
+    <p class="sub">Ism-familiyangizni kiritasiz, mavzuni yozasiz, grammatikangizni tekshirasiz — va tayyor matn ustozingizga yuboriladi.</p>
+    <div class="cards">
+      <div class="card" onclick="chooseTask(1)">
+        <span class="num">Task 1</span>
+        <h3>Xat (Letter)</h3>
+        <p>Norasmiy yoki yarim-rasmiy xat yozish vazifasi.</p>
+        <div class="meta">120–150 so'z · ~20 daqiqa</div>
+      </div>
+      <div class="card" onclick="chooseTask(2)">
+        <span class="num">Task 2</span>
+        <h3>Insho (Essay)</h3>
+        <p>Muammoli mavzu bo'yicha fikr-mulohaza inshosi.</p>
+        <div class="meta">200–250 so'z · ~40 daqiqa</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 2: registration -->
+  <div class="screen" id="screen-register">
+    <button class="back" onclick="goHome()">← Orqaga</button>
+    <div class="eyebrow" id="reg-tag">Task 1 · Xat</div>
+    <h2 class="title">Avval tanishaylik</h2>
+    <p class="sub">Yozgan matningiz ism-familiyangiz bilan birga yuboriladi.</p>
+    <div class="field">
+      <label>Ism</label>
+      <input type="text" id="reg-first" placeholder="Masalan: Dilnoza">
+    </div>
+    <div class="field">
+      <label>Familiya</label>
+      <input type="text" id="reg-last" placeholder="Masalan: Yusupova">
+    </div>
+    <button class="btn btn-primary" onclick="startWriting()">Yozishni boshlash →</button>
+  </div>
+
+  <!-- SCREEN 3: writing -->
+  <div class="screen" id="screen-write">
+    <button class="back" onclick="goHome()">← Boshqa vazifa</button>
+    <div class="eyebrow" id="write-tag">Task 1 · Xat</div>
+    <h2 class="title" id="write-title">Xatingizni yozing</h2>
+
+    <div class="prompt-box">
+      <div class="tag">Mavzu</div>
+      <p id="prompt-text"></p>
+      <textarea id="prompt-custom" style="display:none;width:100%;min-height:60px;border:1px solid var(--line);border-radius:3px;background:var(--paper);font-family:'Inter',sans-serif;font-size:14.5px;padding:8px;margin-top:4px;" placeholder="O'zingiz xohlagan mavzuni shu yerga yozing..."></textarea>
+      <div class="row" style="margin-top:10px;gap:16px;">
+        <button class="shuffle" onclick="shufflePrompt()">↻ Boshqa mavzu</button>
+        <button class="shuffle" id="btn-custom-toggle" onclick="toggleCustomPrompt()">✎ O'z mavzumni yozaman</button>
+      </div>
+    </div>
+
+    <div class="paper-area">
+      <textarea id="essay" placeholder="Shu yerga yozishni boshlang..." oninput="updateCount()"></textarea>
+    </div>
+    <div class="meta-row">
+      <span id="wc" class="wc">0 so'z</span>
+      <span id="range-hint"></span>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-ghost" onclick="checkGrammar()" id="btn-check">Grammatikani tekshirish</button>
+      <button class="btn btn-primary" onclick="submitEssay()" id="btn-submit">Tugatish va yuborish</button>
+    </div>
+
+    <div class="gpanel" id="gpanel">
+      <h4>✎ Ustoz qalami</h4>
+      <div id="gresults"></div>
+    </div>
+  </div>
+
+  <!-- SCREEN 4: success -->
+  <div class="screen" id="screen-success">
+    <div class="success-box">
+      <div class="stamp">✓</div>
+      <h2 class="title">Yuborildi!</h2>
+      <p class="sub">Matningiz muvaffaqiyatli yetkazildi. Omad tilaymiz!</p>
+      <button class="btn btn-primary" onclick="goHome()">Yana yozish</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const PROMPTS = {
+  1: [
+    "Sizning xorijlik do'stingiz O'zbekistonga birinchi marta kelmoqchi. Unga javob xat yozing: qaysi fasl kelishni maslahat berasiz, nima olib kelishi kerak, va uni qayerlarga olib borishni rejalashtiryapsiz.",
+    "Maktabdagi ingliz tili o'qituvchingizga xat yozing: darslarda nimalar yoqayotganini, qaysi mavzular qiyin kelayotganini va qanday yordam kerakligini tushuntiring.",
+    "Yaqin do'stingiz sizni tug'ilgan kuniga taklif qildi, lekin siz kela olmaysiz. Unga uzr so'rab, sababini tushuntirib, tabriklab xat yozing."
+  ],
+  2: [
+    "Ba'zilar zamonaviy texnologiyalar yoshlarning ijodiy qobiliyatini pasaytiradi, deb hisoblashadi. Boshqalar esa texnologiyalar aksincha ijodkorlikni rivojlantiradi, deyishadi. Ikkala fikrni ham muhokama qilib, o'z fikringizni bildiring.",
+    "Ko'pchilik maktab o'quvchilari uchun uy vazifasi foydali, deb hisoblaydi, boshqalar esa bu vaqtni behuda sarflash deb biladi. Ikkala nuqtai nazarni tahlil qilib, xulosangizni yozing.",
+    "Ijtimoiy tarmoqlar odamlarni bir-biriga yaqinlashtiradimi yoki uzoqlashtiradimi? Ikkala qarashni ko'rib chiqib, dalillar bilan o'z pozitsiyangizni bildiring."
+  ]
+};
+
+const TELEGRAM_BOT_TOKEN = "8921758654:AAFIwQBEFd8dGkLmvqN2Z8QhSS6LcGbq3sY";
+const TELEGRAM_CHAT_ID = "8990251356";
+
+// --- Telegram WebApp init (no-op harmlessly if opened outside Telegram) ---
+const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+if(tg){
+  try{
+    tg.ready();
+    tg.expand();
+    tg.setHeaderColor && tg.setHeaderColor('#F7F4EC');
+    tg.setBackgroundColor && tg.setBackgroundColor('#F7F4EC');
+  }catch(e){ console.warn('Telegram WebApp init warning:', e); }
+}
+
+let state = { task: 1, first:'', last:'', prompt:'' };
+
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+function goHome(){ show('screen-home'); }
+
+function chooseTask(n){
+  state.task = n;
+  const label = n===1 ? "Task 1 · Xat" : "Task 2 · Insho";
+  document.getElementById('reg-tag').textContent = label;
+  if(tg && tg.initDataUnsafe && tg.initDataUnsafe.user){
+    const u = tg.initDataUnsafe.user;
+    if(u.first_name) document.getElementById('reg-first').value = u.first_name;
+    if(u.last_name) document.getElementById('reg-last').value = u.last_name;
+  }
+  show('screen-register');
+}
+
+function startWriting(){
+  const f = document.getElementById('reg-first').value.trim();
+  const l = document.getElementById('reg-last').value.trim();
+  if(!f || !l){ toast("Ism va familiyangizni kiriting"); return; }
+  state.first = f; state.last = l;
+  const label = state.task===1 ? "Task 1 · Xat" : "Task 2 · Insho";
+  document.getElementById('write-tag').textContent = label;
+  document.getElementById('write-title').textContent = state.task===1 ? "Xatingizni yozing" : "Inshoyingizni yozing";
+  pickPrompt();
+  document.getElementById('essay').value = '';
+  updateCount();
+  document.getElementById('gpanel').classList.remove('show');
+  show('screen-write');
+}
+
+function pickPrompt(){
+  const list = PROMPTS[state.task];
+  state.prompt = list[Math.floor(Math.random()*list.length)];
+  document.getElementById('prompt-text').textContent = state.prompt;
+  document.getElementById('prompt-text').style.display = '';
+  document.getElementById('prompt-custom').style.display = 'none';
+  document.getElementById('prompt-custom').value = '';
+  document.getElementById('btn-custom-toggle').textContent = "✎ O'z mavzumni yozaman";
+}
+function shufflePrompt(){ pickPrompt(); }
+
+function toggleCustomPrompt(){
+  const p = document.getElementById('prompt-text');
+  const c = document.getElementById('prompt-custom');
+  const btn = document.getElementById('btn-custom-toggle');
+  const usingCustom = c.style.display !== 'none';
+  if(usingCustom){
+    // switch back to suggested prompt
+    pickPrompt();
+  }else{
+    p.style.display = 'none';
+    c.style.display = '';
+    c.value = '';
+    c.focus();
+    btn.textContent = "↻ Tayyor mavzudan tanlash";
+    state.prompt = '';
+    c.oninput = () => { state.prompt = c.value.trim(); };
+  }
+}
+
+function updateCount(){
+  const text = document.getElementById('essay').value.trim();
+  const words = text.length ? text.split(/\s+/).length : 0;
+  const el = document.getElementById('wc');
+  el.textContent = words + " so'z";
+  const [min,max] = state.task===1 ? [120,150] : [200,250];
+  const hint = document.getElementById('range-hint');
+  hint.textContent = `Talab: ${min}-${max} so'z`;
+  el.className = "wc " + (words>=min && words<=max ? "ok" : "warn");
+}
+
+async function checkGrammar(){
+  const text = document.getElementById('essay').value.trim();
+  if(!text){ toast("Avval biror narsa yozing"); return; }
+  const btn = document.getElementById('btn-check');
+  const old = btn.textContent;
+  btn.disabled = true; btn.textContent = "Tekshirilmoqda...";
+  try{
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({
+        model:"claude-sonnet-4-6",
+        max_tokens:1000,
+        messages:[{role:"user", content:
+          "Quyidagi ingliz tilidagi matnda grammatik xatolarni top. FAQAT JSON massiv qaytar, boshqa hech narsa yozma (matn, izoh, markdown belgilari bo'lmasin). Har bir element: {\"error\":\"xato qism\",\"correction\":\"to'g'ri varianti\",\"note\":\"qisqa tushuntirish o'zbek tilida\"}. Agar xato bo'lmasa, bo'sh massiv [] qaytar.\n\nMatn:\n" + text
+        }]
+      })
+    });
+    const data = await res.json();
+    let raw = (data.content || []).map(c=>c.text||"").join("").trim();
+    raw = raw.replace(/```json|```/g,"").trim();
+    let errors = [];
+    try{ errors = JSON.parse(raw); }catch(e){ errors = []; }
+    renderGrammar(errors);
+  }catch(e){
+    toast("Tekshirishda xatolik yuz berdi");
+  }finally{
+    btn.disabled = false; btn.textContent = old;
+  }
+}
+
+function renderGrammar(errors){
+  const panel = document.getElementById('gpanel');
+  const results = document.getElementById('gresults');
+  panel.classList.add('show');
+  if(!errors || errors.length===0){
+    results.innerHTML = '<div class="clean-msg">✓ Grammatik xato topilmadi. Ajoyib!</div>';
+    return;
+  }
+  results.innerHTML = errors.map(e => `
+    <div class="note-item">
+      <span class="mk">✎</span>
+      <div>
+        <span class="wrong">${escapeHtml(e.error||'')}</span> → <span class="right">${escapeHtml(e.correction||'')}</span>
+        <span class="expl">${escapeHtml(e.note||'')}</span>
+      </div>
+    </div>
+  `).join('');
+}
+function escapeHtml(s){ return (s+"").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+async function submitEssay(){
+  const text = document.getElementById('essay').value.trim();
+  if(!text){ toast("Avval biror narsa yozing"); return; }
+  const words = text.split(/\s+/).length;
+
+  const token = TELEGRAM_BOT_TOKEN;
+  const chatId = TELEGRAM_CHAT_ID;
+
+  const btn = document.getElementById('btn-submit');
+  const old = btn.textContent;
+  btn.disabled = true; btn.textContent = "Yuborilmoqda...";
+
+  const label = state.task===1 ? "Task 1 (Xat)" : "Task 2 (Insho)";
+  const message = `📝 Multilevel Writing\n👤 ${state.first} ${state.last}\n📋 ${label}\n🔢 ${words} so'z\n\n${text}`;
+
+  try{
+    const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ chat_id: chatId, text: message })
+    });
+    let data;
+    try{ data = await res.json(); }
+    catch(parseErr){
+      console.error("Telegram response was not JSON, status:", res.status);
+      toast(`Telegram javobi noto'g'ri (status ${res.status})`);
+      return;
+    }
+    if(data.ok){
+      if(tg && tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+      show('screen-success');
+    }else{
+      console.error("Telegram API error:", data);
+      toast("Bot xatosi: " + (data.description || "noma'lum"));
+    }
+  }catch(e){
+    console.error("Fetch to Telegram failed:", e);
+    toast("Ulanish xatosi: " + (e && e.message ? e.message : String(e)));
+  }finally{
+    btn.disabled = false; btn.textContent = old;
+  }
+}
+
+let toastTimer;
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 2600);
+}
+</script>
+</body>
+</html>
